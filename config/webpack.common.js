@@ -1,11 +1,18 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
-// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+const Dotenv = require('dotenv-webpack');
 
+// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+const {TARGET_ENV} = process.env;
 
 module.exports = {
   entry: `${path.resolve(__dirname, "../src")}/index.tsx`,
+  output: {
+    filename: "[name].[contenthash].js",
+    path: path.resolve(__dirname, "../dist"),
+    clean: true
+  },
   module: {
     rules: [
       {
@@ -22,6 +29,9 @@ module.exports = {
     new webpack.ProvidePlugin({
       React: "react",
     }),
+    new Dotenv({
+      path: path.resolve(__dirname, "../env", `.env.${TARGET_ENV}`),
+    })
   ],
   resolve: {
     alias: {

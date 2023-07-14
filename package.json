@@ -4,8 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start-dev": "webpack-dev-server --config config/webpack.dev.js",
-    "build": "webpack --config config/webpack.prod.js"
+    "start-dev": "TARGET_ENV=development webpack-dev-server --config config/webpack.dev.js",
+    "start-prod": "TARGET_ENV=production webpack-dev-server --config config/webpack.dev.js",
+    "build-dev": "TARGET_ENV=development webpack --config config/webpack.dev.js",
+    "build-prod": "TARGET_ENV=production webpack --config config/webpack.prod.js"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -23,6 +25,7 @@
     "core-js": "^3.31.0",
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
+    "dotenv-webpack": "^8.0.1",
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^2.7.6",
     "sass": "^1.63.4",

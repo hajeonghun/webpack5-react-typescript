@@ -12,10 +12,6 @@ module.exports = merge(common, {
     historyApiFallback: true,
     liveReload: true,
   },
-  output: {
-    filename: "[name].[contenthash].js",
-    publicPath: "/",
-  },
   module: {
     rules: [
       {
