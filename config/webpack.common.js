@@ -1,42 +1,49 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const path = require("path");
-const webpack = require("webpack");
-const Dotenv = require('dotenv-webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const dotenv = require('dotenv');
 
 // const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
-const {TARGET_ENV} = process.env;
+const { TARGET_ENV } = process.env;
+
+dotenv.config({
+  path: path.resolve(__dirname, '../env', `.env.${TARGET_ENV}`),
+});
 
 module.exports = {
-  entry: `${path.resolve(__dirname, "../src")}/index.tsx`,
+  entry: `${path.resolve(__dirname, '../src')}/index.tsx`,
   output: {
-    filename: "[name].[contenthash].js",
-    path: path.resolve(__dirname, "../dist"),
-    clean: true
+    filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, '../dist'),
+    clean: true,
   },
   module: {
     rules: [
       {
         test: /\.(ts|tsx|js|jsx)$/,
-        use: "babel-loader",
+        use: 'babel-loader',
         exclude: /node_modules/,
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "public/index.html",
+      template: 'public/index.html',
     }),
-    new webpack.ProvidePlugin({
-      React: "react",
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify({
+        ...process.env,
+      }),
     }),
-    new Dotenv({
-      path: path.resolve(__dirname, "../env", `.env.${TARGET_ENV}`),
-    })
+    // @babel/preset-react runtime 설정으로 대체. babel8부터 default
+    // new webpack.ProvidePlugin({
+    //   React: 'react',
+    // }),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "../src/"),
+      '@': path.resolve(__dirname, '../src/'),
     },
-    extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
+    extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
   },
 };
