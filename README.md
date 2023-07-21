@@ -6,203 +6,61 @@
 3. yarn add -D @babel/cli @babel/core @babel/preset-env @babel/preset-react @babel/preset-typescript babel-loader
 4. yarn add -D core-js css-loader css-minimizer-webpack-plugin html-webpack-plugin mini-css-extract-plugin style-loader sass sass-loader terser-webpack-plugin
 5. yarn add -D @types/react @types/react-dom typescript
+6. yarn add -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks
+7. yarn add -D prettier eslint-plugin-prettier eslint-config-prettier
 -------------------
 
 ## 프로젝트 구조
 ```
-project 
+project
   ├─ config
-  │   ├─webpack.common.js
-  │   ├─webpack.dev.js
-  │   └─webpack.prod.js
+  │   ├─ webpack.common.js
+  │   ├─ webpack.dev.js
+  │   └─ webpack.prod.js
+  ├─ env
+  │   ├─ .env.development
+  │   └─ .env.production
   ├─ node_modules 
   ├─ public
-  │   └─index.html
+  │   └─ index.html
   ├─ src 
-  │   ├─App.tsx
+  │   ├─ app
+  │   │   └─ App.tsx
+  │   ├─ language
+  │   │   ├─ en.json
+  │   │   ├─ ja.json
+  │   │   └─ ko.json
+  │   ├─ components
+  │   │   └─ ...Common Component
+  │   ├─ pages
+  │   │   └─ ...Page Unit
+  │   ├─ hooks
+  │   │   └─ ...Custom hook
+  │   ├─ modules
+  │   │   └─ ...Modules
   │   └─index.tsx
   ├─ .babelrc
+  ├─ .eslintrc.json
+  ├─ .prettierrc.json
   ├─ package.json
   ├─ tsconfig.json
+  ├─ README.md
+  ├─ .gitignore
   └─ yarn.lock
 ```
--------------------
+-------------------  
 
-## 설정
-* webpack.common.js
-```javascript
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const path = require("path");
-const webpack = require("webpack");
-// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
-// BundleAnalyzer는 Bundle 최적화 용도로 보통 사용합니다.
-
-module.exports = {
-  entry: `${path.resolve(__dirname, "../src")}/index.tsx`,
-  module: {
-    rules: [
-      {
-        test: /\.(ts|tsx|js|jsx)$/,
-        use: "babel-loader",
-        exclude: /node_modules/,
-      },
-    ],
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: "public/index.html",
-    }),
-    new webpack.ProvidePlugin({
-      React: "react",
-    }), // 모듈이 자동으로 로드되어 import React from 'react' 생략 가능
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "../src/"),
-    },
-    extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".json"],
-  },
-};
-```
-<br/>
-
-- webpack.dev.js
-```javascript
-const { merge } = require("webpack-merge");
-const common = require("./webpack.common");
-
-module.exports = merge(common, {
-  mode: "development",
-  devtool: "inline-source-map",
-  devServer: {
-    open: false,
-    hot: true,
-    compress: true,
-    port: 8081,
-    historyApiFallback: true,
-    liveReload: true,
-  },
-  output: {
-    filename: "[name].[contenthash].js",
-    publicPath: "/",
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(sa|sc|c)ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
-      },
-    ],
-  },
-});
-```
-<br/>
-
-- webpack.prod.js
-```javascript
-const { merge } = require("webpack-merge");
-const common = require("./webpack.common");
-const path = require("path");
-
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-
-module.exports = merge(common, {
-  mode: "production",
-  devtool: "cheap-module-source-map",
-  output: {
-    filename: "[name].[contenthash].js",
-    path: path.resolve(__dirname, "../dist"),
-    publicPath: "./",
-    clean: true,
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(sa|sc|c)ss$/i,
-        use: [
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          "sass-loader",
-        ],
-      },
-    ],
-  },
-  plugins: [new MiniCssExtractPlugin()],
-  optimization: {
-    usedExports: true,
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          compress: {
-            drop_console: true,
-          },
-        },
-      }),
-      new CssMinimizerPlugin(),
-    ],
-    splitChunks: {
-      chunks: "all",
-    },
-  },
-  performance: {
-    hints: false,
-    maxEntrypointSize: 512000,
-    maxAssetSize: 512000,
-  },
-});
-```
-
-> typescript 변환을 위해 과거에는 ts-loader를 사용했지만 babel 7버전 이후부터는 필요없습니다.  
-> (성능도 babel-loader가 우위) 
-
-<br />
-
-- .babelrc
-```
-{
-  "presets": [
-    "@babel/preset-react",
-    [
-      "@babel/preset-env",
-      {
-        "modules": false,
-        "useBuiltIns": "usage",
-        "corejs": 3
-      }
-    ],
-    "@babel/preset-typescript"
-  ]
-}
-```
-<br/>
-
-- tsconfig.json
-```
-{
-  "compilerOptions": {
-    "outDir": "./dist",
-    "target": "es5",
-    "module": "esnext",
-    "jsx": "react-jsx",
-    "noImplicitAny": true,
-    "allowSyntheticDefaultImports": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src"]
-}
-```
+## 설정 관련
+- import React from 'react'; 생략
+  - react17 부터 생략이 가능하다고 하지만 react자체에 추가된 것이 아니라 빌드 시점에 '무언가' 처리 해주기 때문이다.
+  - CRA 프로젝트에는 문제 없지만 직접 구성하는 경우 두가지 해결 방법이 존재한다.
+    - Provide Plugin 으로 React 식별자를 만나면 react 모듈을 로드시키는 방법
+    - @babel/preset-react의 runtime 속성을 `automatic`으로 설정 [babel](https://babeljs.io/blog/2020/03/16/7.9.0#a-new-jsx-transform-11154)   
+  ```
+  위 두가지에는 차이점이 존재하는데 첫번째 방법(Provide)은 기존 JSX Transform 된 코드에 React 모듈을 주입하는 거고
+  두번째 방법은 JSX Transform 방식을 변경하여 기존 React.createElement()가 아닌 다른 문법을 사용하게 된다.  
+  ```
+- typescript 트랜스파일러로 babel-loader 선택
+  - 대표적인 장점: ts-loader보다 성능 우위 (타입을 제거해나가는 방식으로 진행 됨)
+  - 대표적인 단점: 빌드 시점에 타입체크 불가
+  - 보완: 현재는`@typescript-eslint/parser`로 코딩할때 어느정도 보완
